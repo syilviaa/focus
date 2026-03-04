@@ -1,0 +1,21 @@
+# Xcode
+#
+build/
+DerivedData/
+*.xcodeproj/
+*.xcworkspace/
+*.xcscheme
+*.xccheckout
+*.xcscmblueprint
+xcuserdata/
+DerivedData/
+
+# Swift Package Manager
+#
+.build/
+.swiftpm/
+Package.resolved
+
+# macOS
+#
+.DS_Store
