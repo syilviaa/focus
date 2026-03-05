@@ -16,6 +16,10 @@ DerivedData/
 .swiftpm/
 Package.resolved
 
+# Build Artifacts
+dist/
+Focus.dmg
+
 # macOS
 #
 .DS_Store
