@@ -10,7 +10,7 @@ Focus is a simple macOS menu bar app that helps you stay consistent with your da
 - Completed tasks turn green and move to history
 - Tracks daily streak
 - Resets automatically each day
-- Streak colors change at milestones (🔥 Orange → 💙 Blue at 30 → 💜 Purple at 90 → ❤️‍🔥 Red at 360)
+- Streak colors change at milestones (Orange, Blue at 30, Purple at 90, Red at 360)
 
 |**Tools**|
 - SwiftUI
