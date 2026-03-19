@@ -58,21 +58,48 @@ public class FocusStore: ObservableObject {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         
-        // Add to history if not already there
+        // Add today to completion history
         tasks[index].completionHistory.insert(today)
         tasks[index].lastCompletionDate = Date()
         
-        // Calculate new streak for this task
+        // Calculate streak: count consecutive days ending at today
         var currentStreak = 0
         var checkDate = today
         
         while tasks[index].completionHistory.contains(checkDate) {
             currentStreak += 1
-            guard let nextDate = calendar.date(byAdding: .day, value: -1, to: checkDate) else { break }
-            checkDate = nextDate
+            guard let previousDay = calendar.date(byAdding: .day, value: -1, to: checkDate) else { break }
+            checkDate = previousDay
         }
         
         tasks[index].streak = currentStreak
+    }
+    
+    /// Check each task for broken streaks.
+    /// A streak is broken if yesterday is NOT in the completion history,
+    /// meaning the user let the entire next day pass without completing.
+    private func checkForBrokenStreaks() {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        guard let yesterday = calendar.date(byAdding: .day, value: -1, to: today) else { return }
+        
+        var changed = false
+        for i in 0..<tasks.count {
+            if tasks[i].streak > 0 {
+                // If yesterday is not in the completion history, the streak is broken
+                let yesterdayStart = calendar.startOfDay(for: yesterday)
+                if !tasks[i].completionHistory.contains(yesterdayStart) {
+                    // Also check if they already completed today (streak would still be valid)
+                    if !tasks[i].completionHistory.contains(today) {
+                        tasks[i].streak = 0
+                        changed = true
+                    }
+                }
+            }
+        }
+        if changed {
+            saveTasks()
+        }
     }
     
     private func saveTasks() {
@@ -94,14 +121,20 @@ public class FocusStore: ObservableObject {
         
         if let lastRefresh = UserDefaults.standard.object(forKey: "last_refresh_date") as? Date {
             if !calendar.isDate(lastRefresh, inSameDayAs: today) {
-                // It's a new day! Reset completion but keep tasks for streaks
+                // It's a new day! Reset completion status but keep tasks
                 for i in 0..<tasks.count {
                     tasks[i].isCompleted = false
                 }
+                
+                // Check and break streaks for tasks not completed yesterday
+                checkForBrokenStreaks()
+                
                 saveTasks()
                 UserDefaults.standard.set(today, forKey: "last_refresh_date")
             }
         } else {
+            // First launch — also check for any broken streaks
+            checkForBrokenStreaks()
             UserDefaults.standard.set(today, forKey: "last_refresh_date")
         }
     }
@@ -113,7 +146,8 @@ public class FocusStore: ObservableObject {
     }
     
     private func calculateStreak() {
-        // Just refresh global streak from tasks
+        // Recalculate global streak + check for broken streaks on app launch
+        checkForBrokenStreaks()
         updateGlobalStreak()
     }
 }

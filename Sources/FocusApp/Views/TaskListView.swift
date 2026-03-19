@@ -107,6 +107,24 @@ struct TaskRowView: View {
     @State private var isHovered = false
     @State private var streakScale: CGFloat = 1.0
     
+    /// Streak color tiers:
+    /// - Default (1-29): Orange 🔥
+    /// - 30+: Blue 💙
+    /// - 90+: Purple 💜
+    /// - 360+: Red ❤️‍🔥
+    private var streakColor: Color {
+        let s = task.streak
+        if s >= 360 {
+            return .red
+        } else if s >= 90 {
+            return .purple
+        } else if s >= 30 {
+            return Color(red: 0.2, green: 0.5, blue: 1.0) // Blueish
+        } else {
+            return .orange
+        }
+    }
+    
     var body: some View {
         HStack(spacing: 10) {
             // Task Toggle Button
@@ -131,7 +149,7 @@ struct TaskRowView: View {
                         Text("\(task.streak)")
                             .font(.system(size: 11, weight: .black, design: .rounded))
                     }
-                    .foregroundColor(.orange)
+                    .foregroundColor(streakColor)
                     .scaleEffect(streakScale)
                     .onChange(of: task.streak) { oldValue, newValue in
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.4)) {
